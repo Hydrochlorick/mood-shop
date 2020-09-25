@@ -34,14 +34,39 @@ for (let i=0; i<data.length; ++i) {
   itemsContainer.appendChild(newDiv)
 }
 
-
 const cart = []
+
+// Handle clicks in itemList --------------------------------
+itemsList.onclick = function(e) {
+  if (e.target && e.target.classList.contains('remove')) {
+    const name = e.target.dataset.name
+    remoteItem(name)
+  } else if (e.target && e.target.classList.contains('add-one')) {
+    const name = e.target.dataset.name
+    addItem(name)
+  } else if (e.target && e.target.classList.contains('remove-one')) {
+    const name = e.target.dataset.name
+    remoteItem(name, 1)
+  }
+}
+
+// Listen for changes to form in itemList
+// onchange doesn't update *as* you're typing, but once the field is no longer active (you click away)
+itemsList.onchange = function(e) {
+  if (e.target && e.target.classList.contains('update')) {
+    const name = e.target.dataset.name
+    const qty = parseInt(e.target.value)
+    
+    updateCart(name, qty)
+  }
+}
 
 // Add item -------------------------------------------------
 function addItem(name, price) {
   for (let i = 0; i < cart.length; i +=1 ) {
     if (cart[i].name === name) {
       cart[i].qty += 1
+      showItems()
       return
     }
   }
@@ -58,11 +83,25 @@ function remoteItem(name, qty = 0) {
       if (cart[i].qty < 1 || qty ===0) {
         cart.splice(i, 1)
       }
+      showItems()
       return
     }
   }
 }
 
+function updateCart(name, qty) {
+  for (let i = 0; i < cart.length; i += 1) {
+    if (cart[i].name === name) {
+      if (qty < 1) {
+        remoteItem(name)
+        return
+      }
+      cart[i].qty = qty
+      showItems()
+      return
+    }
+  }
+}
 
 // Show Items at bottom of screen -------------------------------------------
 function showItems() {
@@ -74,12 +113,18 @@ function showItems() {
     // Create 3 variables in one ine of code. Only works because cart[i] is an object matching that exact syntax.
     const {name, price, qty} = cart[i]
 
-    itemStr += `<li>${name} ${price} x ${qty} = ${qty * price}</li>`
+    itemStr += `<li>
+    ${name} ${price} x ${qty} = ${qty * price}
+    <button class="remove" data-name="${name}">Remove</button>
+    <button class="add-one" data-name="${name}"> + </button>
+    <button class="remove-one" data-name="${name}"> - </button>
+    <input class="update" type="number" min="0" data-name="${name}">
+    </li>`
   }
   itemsList.innerHTML = itemStr
  
   const total = getTotal()
-  cartTotal.innerHTML = `Total in cart: $${total}` // Why tf doesn't this work?
+  cartTotal.innerHTML = `Total in cart: $${total}`
 }
 
 const all_items_button = Array.from(document.querySelectorAll('button'))
