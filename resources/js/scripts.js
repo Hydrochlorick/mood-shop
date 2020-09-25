@@ -1,6 +1,9 @@
 import data from './data.js'
 
 const itemsContainer = document.getElementById('items')
+const itemsList = document.getElementById('item-list')
+const cartQty = document.getElementById('cart-qty')
+const cartTotal = document.getElementById('cart-total')
 
 for (let i=0; i<data.length; ++i) {
   // Create a new Div for every data item
@@ -60,31 +63,43 @@ function remoteItem(name, qty = 0) {
   }
 }
 
+
+// Show Items at bottom of screen -------------------------------------------
 function showItems() {
-  
-  console.log(`You have ${getQty()} items in your cart.`)
+  const qty = getQty()
+  cartQty.innerHTML = `You have ${qty} items in your cart.`
 
+  let itemStr = ''
   for (let i = 0; i < cart.length; i +=1 ) {
-    console.log(`- ${cart[i].name} ${cart[i].price} x ${cart[i].qty}`)
-  }
+    // Create 3 variables in one ine of code. Only works because cart[i] is an object matching that exact syntax.
+    const {name, price, qty} = cart[i]
 
+    itemStr += `<li>${name} ${price} x ${qty} = ${qty * price}</li>`
+  }
+  itemsList.innerHTML = itemStr
  
-  let total = getTotal()
-  console.log(`Total in cart: $${total}`)
+  const total = getTotal()
+  cartTotal.innerHTML = `Total in cart: $${total}` // Why tf doesn't this work?
+}
 
-  function getQty() {
-    let qty = 0
-    for (let i = 0; i < cart.length; i += 1) {
-      qty += cart[i].qty
-    }
-    return qty
+const all_items_button = Array.from(document.querySelectorAll('button'))
+all_items_button.forEach( elt => elt.addEventListener('click', () => {
+  addItem(elt.getAttribute('id'), elt.getAttribute('data-price'))
+  showItems()
+}))
+
+function getQty() {
+  let qty = 0
+  for (let i = 0; i < cart.length; i += 1) {
+    qty += cart[i].qty
   }
+  return qty
+}
 
-  function getTotal() {
-    for (let i = 0; i < cart.length; i += 1) {
-      total += cart[i].price * cart[i].qty
-    }
-    return total.toFixed(2)
+function getTotal() {
+  let total = 0
+  for (let i = 0; i < cart.length; i += 1) {
+    total += cart[i].price * cart[i].qty
   }
-
+  return total.toFixed(2)
 }
